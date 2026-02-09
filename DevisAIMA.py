@@ -7,6 +7,43 @@ import tempfile
 import time
 import io
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+AIMA_LOGO_PATH = resource_path("aima_logo.png")
+
+
+# Configuration de la page Streamlit
+st.set_page_config(layout="wide", page_title="AIMA - Gestion de Devis")
+
+# --- CHEMIN DU LOGO ---
+#AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
+
+# --- INITIALISATION ---
+if 'manual_items_dict' not in st.session_state:
+    st.session_state.manual_items_dict = []
+if 'active_catalog' not in st.session_state:
+    st.session_state.active_catalog = []
+if 'catalog_selector' not in st.session_state:
+    st.session_state.catalog_selector = []
+
+# --- CALLBACKS ---
+def delete_catalog_item(item_name):
+    if item_name in st.session_state.catalog_selector:
+        st.session_state.catalog_selector.remove(item_name)
+    st.session_state.active_catalog = [x for x in st.session_state.active_catalog if x['name'] != item_name]
+
+def delete_manual_item(index):
+    st.session_state.manual_items_dict.pop(index)
+
+# --- LOGO SIDEBAR ---
+if os.path.exists(AIMA_LOGO_PATH):
+    st.sidebar.image(AIMA_LOGO_PATH, use_container_width=True)
+    st.sidebar.divider()
 # --- CONFIGURATION STREAMLIT ---
 st.set_page_config(layout="wide", page_title="AIMA - Gestion de Devis")
 
@@ -225,4 +262,5 @@ if items_to_pdf:
         pdf_out = io.BytesIO()
         pdf_data = pdf.output(dest='S')
         pdf_out.write(pdf_data.encode('latin-1') if isinstance(pdf_data, str) else pdf_data)
+
         st.download_button("💾 Télécharger le Devis", pdf_out.getvalue(), f"Devis_{d_num}.pdf", "application/pdf")
