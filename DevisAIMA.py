@@ -48,7 +48,7 @@ if os.path.exists(AIMA_LOGO_PATH):
 st.set_page_config(layout="wide", page_title="AIMA - Gestion de Devis")
 
 # --- PARAMÈTRES ET CHEMINS ---
-AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
+#AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
 
 LOCATIONS = {
     "CAME": {"address": "409 Chemin de Gensanne, 64520 Came", "email": "lehangardaima.came@gmail.com", "phone": "05 59 31 97 53"},
@@ -308,4 +308,5 @@ if items_to_pdf:
         pdf_out.write(pdf_data.encode('latin-1') if isinstance(pdf_data, str) else pdf_data)
 
         st.download_button("💾 Télécharger le Devis", pdf_out.getvalue(), f"Devis_{d_num}.pdf", "application/pdf")
+
 
