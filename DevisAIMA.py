@@ -193,7 +193,7 @@ st.sidebar.divider()
 st.sidebar.subheader("⚙️ Frais Annexes")
 include_adh = st.sidebar.checkbox(f"Cout adhésion annuelle {d_date.year} (1.00 EUR)", value=True)
 include_liv = st.sidebar.checkbox("Livraison par nos soins", value=True)
-liv_total = st.sidebar.number_input("Prix de la livraison (EUR)", value=78.00) if include_liv else 0.0
+liv_total = st.sidebar.number_input("Prix de la livraison (EUR)", value=00.00) if include_liv else 0.0
 
 selected_catalog = st.multiselect("📦 Sélectionner les dispositifs :", options=sorted(list(data_prices.keys())), key="catalog_selector")
 items_to_pdf = []
@@ -308,5 +308,6 @@ if items_to_pdf:
         pdf_out.write(pdf_data.encode('latin-1') if isinstance(pdf_data, str) else pdf_data)
 
         st.download_button("💾 Télécharger le Devis", pdf_out.getvalue(), f"Devis_{d_num}.pdf", "application/pdf")
+
 
 
