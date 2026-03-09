@@ -10,9 +10,12 @@ from PIL import Image
 import pdfplumber
 
 # --- CONFIGURATION INITIALE ---
-# Sur Streamlit Cloud, utilisez un chemin relatif. 
-# Placez l'image 'aima_logo.png' à la racine de votre dépôt GitHub.
-AIMA_LOGO_PATH = "aima_logo.png" 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 st.set_page_config(layout="wide", page_title="AIMA - Devis & Factures")
 
@@ -219,3 +222,4 @@ if items_to_pdf and st.button("📄 GÉNÉRER LE PDF"):
         pdf_output = pdf_output.encode('latin-1')
 
     st.download_button("💾 Télécharger le PDF", pdf_output, f"{doc_type}_{d_num}.pdf", "application/pdf")
+
