@@ -1,3 +1,6 @@
 streamlit
 fpdf
+pdfplumber
+pandas
+streamlit-gsheets-connection
 Pillow
