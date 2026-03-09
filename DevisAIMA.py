@@ -7,7 +7,6 @@ import tempfile
 import time
 import io
 import sys
-from PIL import Image
 import pdfplumber  # Indispensable pour l'import
 
 # --- CONFIGURATION INITIALE ---
@@ -352,3 +351,4 @@ if items_to_pdf:
         pdf_data = pdf.output(dest='S')
         pdf_out.write(pdf_data.encode('latin-1') if isinstance(pdf_data, str) else pdf_data)
         st.download_button(f"💾 Télécharger {doc_type}", pdf_out.getvalue(), f"{doc_type}_{d_num}.pdf", "application/pdf")
+
