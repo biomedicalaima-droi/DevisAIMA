@@ -6,23 +6,17 @@ import os
 import tempfile
 import time
 import io
-import sys
 from PIL import Image
 import pdfplumber
 
 # --- CONFIGURATION DU LOGO ---
-# Remplacez par le chemin correct. Si vous déployez sur le web, mettez juste "aima_logo.png"
-AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png" 
-
-def get_logo():
-    if os.path.exists(AIMA_LOGO_PATH):
-        return AIMA_LOGO_PATH
-    return None
+# Assurez-vous que le fichier est bien à la racine de votre projet Streamlit
+AIMA_LOGO_PATH = "aima_logo.png" 
 
 # --- CONFIGURATION INITIALE ---
 st.set_page_config(layout="wide", page_title="AIMA - Devis & Factures")
 
-# --- DONNÉES ET CONSTANTES ---
+# --- DONNÉES ---
 LOCATIONS = {
     "CAME": {"address": "409 Chemin de Gensanne, 64520 Came", "email": "lehangardaima.came@gmail.com", "phone": "05 59 31 97 53"},
     "OSSERAIN-RIVAREYTE": {"address": "1009 Route des Aügas, 64390 Osserain-Rivareyte", "email": "osserain@assoaima.org", "phone": "05 59 38 17 86"},
@@ -31,37 +25,7 @@ LOCATIONS = {
 }
 LIEUX_ARTICLES = ["Came", "Osserain-Rivareyte", "Salies-de-Béarn", "Castetnau-Camblong"]
 
-# (Catalogue abrégé pour l'exemple, gardez votre liste complète dans votre fichier)
-data_prices = {
-    "Fauteuil à roulette COMFORTO": 0.0, "Bureau": 0.0, "Table de réunion": 0.0, "Armoire basse": 0.0,
-    "Caisson 3 Tiroirs": 0.0, "Vestiaire Métallique": 0.0, "Chaise scolaire T6": 0.0
-}
-
-# --- SESSION STATE ---
-if 'manual_items_dict' not in st.session_state: st.session_state.manual_items_dict = []
-if 'catalog_selector' not in st.session_state: st.session_state.catalog_selector = []
-
-# --- FONCTIONS ---
-def import_items_from_pdf(uploaded_pdf):
-    try:
-        new_items = []
-        with pdfplumber.open(uploaded_pdf) as pdf:
-            for page in pdf.pages:
-                table = page.extract_table()
-                if table:
-                    for row in table:
-                        if not row or "Designation" in str(row[0]): continue
-                        try:
-                            nom = str(row[0]).strip()
-                            prix = float(str(row[1]).replace(' ', '').replace('€', '').replace(',', '.'))
-                            new_items.append({"id": str(time.time())+nom, "nom": nom, "prix": prix})
-                        except: continue
-        return new_items
-    except Exception as e:
-        st.error(f"Erreur d'importation : {e}")
-        return []
-
-# --- CLASSE PDF DESIGN OPTIMISÉ ---
+# --- CLASSE PDF (LOGIQUE DE TABLEAU FIXE) ---
 class AIMA_PDF(FPDF):
     def __init__(self, logo_path=None, doc_type="DEVIS"):
         super().__init__()
@@ -69,180 +33,164 @@ class AIMA_PDF(FPDF):
         self.doc_type = doc_type
 
     def header(self):
-        if self.logo_path and os.path.exists(self.logo_path): 
-            self.image(self.logo_path, 20, 18, 42)
-        self.set_font('Arial', 'B', 14); self.set_text_color(24, 73, 115)
+        if self.logo_path and os.path.exists(self.logo_path):
+            self.image(self.logo_path, 10, 10, 35)
+        self.set_font('Arial', 'B', 12)
+        self.set_text_color(24, 73, 115)
         self.set_xy(100, 10)
         self.cell(100, 8, f"{self.doc_type} D'EQUIPEMENT MOBILIER ET MATERIEL", 0, 1, 'R')
-        self.ln(20)
+        self.ln(15)
 
     def footer(self):
-        self.set_y(-30); self.set_font('Arial', 'I', 7.5); self.set_text_color(100, 100, 100)
+        self.set_y(-25)
+        self.set_font('Arial', 'I', 7)
+        self.set_text_color(100, 100, 100)
         self.cell(0, 4, "TVA non applicable, Art. 261-7b du code général des impôts", 0, 1, 'C')
-        self.cell(0, 4, "IBAN : FR90 2004 1010 0112 2207 4K02 259 | SIRET : 508 544 715 00057", 0, 1, 'C')
+        self.cell(0, 4, "IBAN: FR90 2004 1010 0112 2207 4K02 259 | SIRET: 508 544 715 00057", 0, 1, 'C')
         self.cell(0, 4, f'Page {self.page_no()}', 0, 0, 'R')
 
-    def draw_first_page_info(self, d_num, d_ref, d_date, c_name, c_addr, aima_info, status):
-        # Statut Box
+    def draw_info_blocks(self, d_num, d_ref, d_date, c_name, c_addr, aima_info, status):
+        # Statut
         colors = {"En attente": (255, 193, 7), "Accepté": (40, 167, 69), "Refusé": (220, 53, 69)}
-        self.set_xy(150, 28); self.set_font('Arial', 'B', 10)
-        self.set_fill_color(*colors.get(status, (128,128,128))); self.set_text_color(255,255,255)
+        self.set_xy(150, 25)
+        self.set_font('Arial', 'B', 10)
+        self.set_fill_color(*colors.get(status, (128,128,128)))
+        self.set_text_color(255, 255, 255)
         self.cell(50, 8, f"STATUT : {status.upper()}", 0, 1, 'C', True)
+
+        # Blocs Expéditeur / Destinataire
+        self.set_text_color(0, 0, 0)
+        y_pos = 40
+        # AIMA
+        self.set_xy(10, y_pos)
+        self.set_font('Arial', 'B', 9); self.set_fill_color(51, 139, 140); self.set_text_color(255,255,255)
+        self.cell(80, 6, "Association AIMA", 1, 1, 'L', True)
+        self.set_font('Arial', '', 8); self.set_text_color(0,0,0)
+        self.set_x(10); self.multi_cell(80, 4, aima_info.encode('latin-1','replace').decode('latin-1'), 1, 'L')
         
-        # Infos Blocs
-        y_start = 40
-        self.set_fill_color(51, 139, 140); self.set_text_color(255, 255, 255)
-        self.set_xy(10, y_start); self.cell(80, 7, "Association AIMA", 1, 1, 'C', True)
-        self.set_text_color(0, 0, 0); self.set_font('Arial', '', 8); self.set_x(10)
-        self.multi_cell(80, 4, aima_info.encode('latin-1', 'replace').decode('latin-1'), 1, 'C')
+        # CLIENT
+        self.set_xy(110, y_pos)
+        self.set_font('Arial', 'B', 9); self.set_fill_color(51, 139, 140); self.set_text_color(255,255,255)
+        self.cell(90, 6, f"DESTINATAIRE : {c_name}", 1, 1, 'L', True)
+        self.set_font('Arial', '', 9); self.set_text_color(0,0,0)
+        self.set_x(110); self.multi_cell(90, 5, c_addr.encode('latin-1','replace').decode('latin-1'), 1, 'L')
         
-        self.set_xy(120, y_start); self.set_fill_color(51, 139, 140); self.set_text_color(255, 255, 255)
-        self.cell(80, 7, f"DESTINATAIRE : {c_name.upper()}", 1, 1, 'C', True)
-        self.set_text_color(0, 0, 0); self.set_font('Arial', '', 9); self.set_x(120)
-        self.multi_cell(80, 5, c_addr.encode('latin-1', 'replace').decode('latin-1'), 1, 'C')
-        
-        self.set_xy(10, self.get_y() + 5); self.set_font('Arial', '', 9)
-        self.multi_cell(60, 5, f"{self.doc_type} N°: {d_num}\nRéf: {d_ref}\nDate: {d_date.strftime('%d/%m/%Y')}", 1, 'L')
+        # Infos Document
+        curr_y = self.get_y() + 5
+        self.set_xy(10, curr_y)
+        self.set_font('Arial', '', 9)
+        info_doc = f"{self.doc_type} N°: {d_num}\nRéf: {d_ref}\nDate: {d_date.strftime('%d/%m/%Y')}"
+        self.multi_cell(60, 5, info_doc, 1, 'L')
         return self.get_y() + 5
 
-# --- INTERFACE STREAMLIT ---
-logo_path = get_logo()
-col_logo, col_titre = st.columns([1, 4])
-with col_logo:
-    if logo_path: st.image(logo_path, width=150)
-with col_titre:
-    st.title(f"Générateur AIMA - {doc_type if 'doc_type' in locals() else ''}")
+# --- INTERFACE ---
+st.sidebar.header("⚙️ Paramètres")
+doc_type = st.sidebar.selectbox("Document", ["DEVIS", "FACTURE"])
+doc_status = st.sidebar.selectbox("Statut", ["En attente", "Accepté", "Refusé"])
+selected_loc = st.sidebar.selectbox("Expéditeur", list(LOCATIONS.keys()))
 
-# Sidebar
-st.sidebar.header("📝 Paramètres")
-doc_type = st.sidebar.selectbox("Type", ["DEVIS", "FACTURE"])
-doc_status = st.sidebar.selectbox("État", ["En attente", "Accepté", "Refusé"])
-selected_loc = st.sidebar.selectbox("Lieu d'expédition", options=list(LOCATIONS.keys()))
+# Affichage du logo sur Streamlit
+if os.path.exists(AIMA_LOGO_PATH):
+    st.image(AIMA_LOGO_PATH, width=150)
+else:
+    st.warning("⚠️ Fichier 'aima_logo.png' non trouvé à la racine.")
 
-loc_data = LOCATIONS[selected_loc]
-aima_pdf_info = f"Le Hangar d'AIMA - {selected_loc}\n{loc_data['address']}\nTél : {loc_data['phone']}\nMail : {loc_data['email']}"
+# ... (Ici gardez votre logique de saisie client et sélection d'articles habituelle) ...
 
-c_name = st.sidebar.text_input("Client", "ONG- EPSPE")
-c_addr = st.sidebar.text_area("Adresse Client", "Cotonou, Bénin")
-d_num = st.sidebar.text_input("N° Document", "2026-001")
-d_ref = st.sidebar.text_input("Référence", "AIMA-2026")
-d_date = st.sidebar.date_input("Date", date.today())
-include_adh = st.sidebar.checkbox("Adhésion (1€)", True)
-liv_total = st.sidebar.number_input("Frais de livraison (€)", 0.0)
-
-# Sélection Articles
-selected_catalog = st.multiselect("📦 Catalogue :", options=sorted(data_prices.keys()), key="catalog_selector")
-items_to_pdf = []
-total_global = 0.0
-
-def render_row(label, price, key):
-    with st.container(border=True):
-        st.markdown(f"**{label}**")
-        c1, c2, c3, c4 = st.columns([1, 1, 1, 2])
-        p = c1.number_input("P.U.", value=float(price), key=f"p_{key}")
-        q = c2.number_input("Qté", min_value=1, key=f"q_{key}")
-        l = c3.selectbox("Lieu", LIEUX_ARTICLES, key=f"l_{key}")
-        imgs = c4.file_uploader("Photos (max 3)", accept_multiple_files=True, key=f"i_{key}")
-        return {"Désignation": label, "P.U.": p, "Qté": q, "Total": p*q, "Lieu": l, "Images": imgs[:3] if imgs else []}
-
-for i, item in enumerate(selected_catalog):
-    res = render_row(item, data_prices.get(item, 0), f"cat_{i}")
-    items_to_pdf.append(res); total_global += res['Total']
-
-# Articles Manuels
-st.subheader("➕ Articles Personnalisés")
-col_m1, col_m2, col_m3 = st.columns([3, 1, 1])
-m_nom = col_m1.text_input("Désignation")
-m_prix = col_m2.number_input("Prix", 0.0)
-if col_m3.button("Ajouter"):
-    st.session_state.manual_items_dict.append({"nom": m_nom, "prix": m_prix})
-    st.rerun()
-
-for i, m in enumerate(st.session_state.manual_items_dict):
-    res = render_row(m['nom'], m['prix'], f"man_{i}")
-    items_to_pdf.append(res); total_global += res['Total']
-
-# Total
-grand_total = total_global + (1.0 if include_adh else 0.0) + liv_total
-st.divider()
-st.write(f"### TOTAL NET : {grand_total:,.2f} EUR")
-
-# --- GÉNÉRATION PDF FINAL ---
-if items_to_pdf and st.button(f"📄 GÉNÉRER LE PDF {doc_type}"):
-    pdf = AIMA_PDF(logo_path=logo_path, doc_type=doc_type)
+# --- LOGIQUE DE GÉNÉRATION (TABLEAU SANS MÉLANGE) ---
+if st.button(f"📄 GÉNÉRER LE PDF"):
+    pdf = AIMA_PDF(logo_path=AIMA_LOGO_PATH, doc_type=doc_type)
     pdf.add_page()
-    y_pos = pdf.draw_first_page_info(d_num, d_ref, d_date, c_name, c_addr, aima_pdf_info, doc_status)
     
-    # Configuration colonnes (Design propre)
-    cols_w = [45, 17, 10, 18, 70, 30] if doc_type == "DEVIS" else [115, 17, 10, 18, 0, 30]
-    headers = ["Designation", "P.U.", "Qte", "Total", "Photos", "Lieu"]
+    # Entête
+    y_table = pdf.draw_info_blocks(d_num, d_ref, d_date, c_name, c_addr, aima_info, doc_status)
+    
+    # Colonnes : Largeurs fixes
+    # [Designation(1), PU(2), Qte(3), Total(4), Photos(5), Lieu(6)]
+    if doc_type == "DEVIS":
+        w = [50, 20, 10, 20, 60, 30]
+        headers = ["Désignation", "P.U.", "Qté", "Total", "Photos", "Lieu"]
+    else:
+        w = [110, 20, 10, 20, 0, 30] # Pas de colonne photos pour facture
+        headers = ["Désignation", "P.U.", "Qté", "Total", "", "Lieu"]
 
-    pdf.set_font('Arial', 'B', 8); pdf.set_fill_color(220, 220, 220); pdf.set_xy(10, y_pos)
+    # Header du tableau
+    pdf.set_xy(10, y_table)
+    pdf.set_font('Arial', 'B', 8); pdf.set_fill_color(230, 230, 230)
     for i, h in enumerate(headers):
-        if cols_w[i] > 0: pdf.cell(cols_w[i], 8, h, 1, 0, 'C', True)
+        if w[i] > 0: pdf.cell(w[i], 8, h, 1, 0, 'C', True)
     pdf.ln()
 
-    # Lignes d'articles
-    pdf.set_font("Arial", '', 8)
+    # Corps du tableau
+    pdf.set_font('Arial', '', 8)
     for row in items_to_pdf:
-        nom_p = row['Désignation'].encode('latin-1', 'replace').decode('latin-1')
+        # 1. Calculer la hauteur nécessaire pour cette ligne
+        text = row['Désignation'].encode('latin-1','replace').decode('latin-1')
+        nb_lines = len(pdf.multi_cell(w[0], 5, text, split_only=True))
+        h_row = max(nb_lines * 5, 30 if (doc_type == "DEVIS" and row['Images']) else 10)
         
-        # Calcul de la hauteur de ligne dynamique
-        nb_lines = len(pdf.multi_cell(cols_w[0]-2, 4, nom_p, split_only=True))
-        min_h = 32 if (doc_type == "DEVIS" and row['Images']) else 10
-        h_row = max(nb_lines * 4 + 4, min_h)
-        
-        if pdf.get_y() + h_row > 240: pdf.add_page()
-        y_c = pdf.get_y()
-        
-        # Cellule Désignation (Multi-ligne)
-        pdf.rect(10, y_c, cols_w[0], h_row)
-        pdf.set_xy(10, y_c + (h_row - (nb_lines * 4)) / 2)
-        pdf.multi_cell(cols_w[0], 4, nom_p, 0, 'L')
-        
-        # Autres Cellules
-        pdf.set_xy(10 + cols_w[0], y_c)
-        pdf.cell(cols_w[1], h_row, f"{row['P.U.']:,.2f}", 1, 0, 'C')
-        pdf.cell(cols_w[2], h_row, str(row['Qté']), 1, 0, 'C')
-        pdf.cell(cols_w[3], h_row, f"{row['Total']:,.2f}", 1, 0, 'C')
-        
-        # Photos
-        if doc_type == "DEVIS":
-            img_x_start = pdf.get_x()
-            pdf.cell(cols_w[4], h_row, "", 1, 0) 
+        # Saut de page si besoin
+        if pdf.get_y() + h_row > 260:
+            pdf.add_page()
+            # Redessiner le header sur la nouvelle page
+            pdf.set_font('Arial', 'B', 8); pdf.set_fill_color(230, 230, 230)
+            for i, h in enumerate(headers):
+                if w[i] > 0: pdf.cell(w[i], 8, h, 1, 0, 'C', True)
+            pdf.ln()
+
+        start_x = 10
+        start_y = pdf.get_y()
+
+        # Dessiner les bordures de la ligne (rectangles) pour éviter les trous
+        for i in range(len(w)):
+            if w[i] > 0:
+                pdf.rect(start_x + sum(w[:i]), start_y, w[i], h_row)
+
+        # Remplir les données
+        # Col 1: Désignation
+        pdf.set_xy(start_x, start_y)
+        pdf.multi_cell(w[0], 5, text, 0, 'L')
+
+        # Col 2, 3, 4: Prix, Qté, Total
+        pdf.set_xy(start_x + w[0], start_y)
+        pdf.cell(w[1], h_row, f"{row['P.U.']:.2f}", 0, 0, 'C')
+        pdf.cell(w[2], h_row, str(row['Qté']), 0, 0, 'C')
+        pdf.cell(w[3], h_row, f"{row['Total']:.2f}", 0, 0, 'C')
+
+        # Col 5: Photos (Uniquement Devis)
+        if doc_type == "DEVIS" and w[4] > 0:
+            img_x = pdf.get_x()
             if row['Images']:
-                for idx, img_file in enumerate(row['Images']):
+                for idx, img in enumerate(row['Images'][:3]):
                     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
-                        with Image.open(img_file) as pimg:
-                            if pimg.mode in ("RGBA", "P"): pimg = pimg.convert("RGB")
-                            pimg.thumbnail((400, 400))
-                            pimg.save(tmp.name, "JPEG")
-                        pdf.image(tmp.name, img_x_start + 2 + (idx * 22), y_c + 2, w=20, h=h_row - 4)
-                    if os.path.exists(tmp.name): os.remove(tmp.name)
-        
-        pdf.cell(cols_w[5], h_row, row['Lieu'].encode('latin-1', 'replace').decode('latin-1'), 1, 1, 'C')
+                        with Image.open(img) as pimg:
+                            pimg.convert("RGB").save(tmp.name, "JPEG")
+                        pdf.image(tmp.name, img_x + 2 + (idx * 19), start_y + 2, h=h_row - 4)
+                    os.unlink(tmp.name)
 
-    # Bloc Totaux et Signature
-    pdf.ln(10)
-    if pdf.get_y() > 210: pdf.add_page()
-    y_final = pdf.get_y()
+        # Col 6: Lieu
+        pdf.set_xy(start_x + sum(w[:5]), start_y)
+        pdf.cell(w[5], h_row, row['Lieu'], 0, 1, 'C')
+
+    # --- TOTAUX ET SIGNATURE ---
+    pdf.ln(5)
+    if pdf.get_y() > 220: pdf.add_page()
     
-    pdf.set_font("Arial", '', 9); pdf.set_xy(10, y_final)
-    pdf.cell(75, 8, f"Adhesion annuelle {d_date.year}", 1, 0, 'L')
-    pdf.cell(25, 8, "1.00 EUR" if include_adh else "0.00 EUR", 1, 1, 'R')
-    pdf.set_x(10)
-    pdf.cell(75, 8, "Livraison au pied du batiment", 1, 0, 'L')
-    pdf.cell(25, 8, f"{liv_total:,.2f} EUR", 1, 1, 'R')
-    pdf.set_x(10); pdf.set_fill_color(51, 139, 140); pdf.set_text_color(255, 255, 255); pdf.set_font("Arial", 'B', 10)
-    pdf.cell(75, 10, "TOTAL NET", 1, 0, 'C', True)
-    pdf.set_text_color(0, 0, 0); pdf.cell(25, 10, f"{grand_total:,.2f} EUR", 1, 1, 'R')
-
-    pdf.set_xy(115, y_final); pdf.set_font("Arial", 'B', 9)
-    pdf.cell(85, 8, "Signature et cachet :", 1, 1, 'L')
-    pdf.set_x(115); pdf.cell(85, 20, "", 1, 1)
-
-    # Sortie Binaire
-    pdf_data = pdf.output(dest='S')
-    if isinstance(pdf_data, str): pdf_data = pdf_data.encode('latin-1')
+    final_y = pdf.get_y()
+    pdf.set_font('Arial', 'B', 9)
+    pdf.set_xy(10, final_y)
+    pdf.cell(70, 7, f"Adhésion annuelle: {'1.00' if include_adh else '0.00'} EUR", 1, 1)
+    pdf.cell(70, 7, f"Livraison: {liv_total:.2f} EUR", 1, 1)
+    pdf.set_fill_color(51, 139, 140); pdf.set_text_color(255, 255, 255)
+    pdf.cell(70, 10, f"TOTAL NET: {grand_total:.2f} EUR", 1, 0, 'C', True)
     
-    st.download_button(f"💾 Télécharger {doc_type} PDF", pdf_data, f"{doc_type}_{d_num}.pdf", "application/pdf")
+    # Signature
+    pdf.set_xy(110, final_y)
+    pdf.set_text_color(0,0,0)
+    pdf.cell(90, 24, "Signature et cachet:", 1, 0, 'L')
+
+    # Sortie
+    pdf_bytes = pdf.output(dest='S')
+    if isinstance(pdf_bytes, str): pdf_bytes = pdf_bytes.encode('latin-1')
+    
+    st.download_button("💾 Télécharger le PDF", pdf_bytes, f"{doc_type}_{d_num}.pdf", "application/pdf")
