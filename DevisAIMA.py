@@ -219,3 +219,4 @@ if st.button(f"🚀 GÉNÉRER LE {doc_type} MAINTENANT"):
     pdf_out = pdf.output(dest='S')
     stream.write(pdf_out.encode('latin-1') if isinstance(pdf_out, str) else pdf_out)
     st.download_button("💾 Télécharger le PDF", stream.getvalue(), f"{doc_type}_{d_num}.pdf", "application/pdf")
+
