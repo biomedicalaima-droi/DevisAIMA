@@ -100,7 +100,7 @@ LOCATIONS = {
     "CASTETNAU-CAMBLONG": {"address": "11 Rue du Bourg, 64190 Castetnau-Camblong", "email": "lehangardaima.castetnau@gmail.com", "phone": "05 59 66 16 90"}
 }
 LIEUX_ARTICLES = ["Came", "Osserain-Rivareyte", "Salies-de-Béarn", "Castetnau-Camblong"]
-MODES_PAIEMENT = ["Virement", "Chèque", "Espèces", "Carte Bleue"]
+MODES_PAIEMENT = ["Virement", "Chèque", "Espèces", "Carte Bleue","Chorus"]
 
 data_prices = {
     "Fauteuil à roulette COMFORTO": 0.0, "Fauteuil de bureau ADDFORM": 0.0, "Fauteuil de bureau EUROSIT": 0.0,
@@ -418,4 +418,5 @@ if items_to_pdf:
         increment_counter(doc_type)
         st.success(f"✅ Sauvegardé : {full_path}")
         st.download_button(f"💾 Télécharger {doc_type}", open(full_path, "rb"), f"{doc_type}_{d_num}.pdf")
+
 
