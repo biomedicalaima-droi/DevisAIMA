@@ -8,18 +8,27 @@ import time
 import json
 from PIL import Image
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+AIMA_LOGO_PATH = resource_path("aima_logo.png")
+
 # --- CONFIGURATION INITIALE ---
 st.set_page_config(layout="wide", page_title="AIMA - Devis & Factures")
 
 TARGET_FOLDER = r"C:\Usrs\perso\Desktop\Devis-Facture"
 COUNTER_FILE = os.path.join(TARGET_FOLDER, "counter.json")
-AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
+#AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
 
 if not os.path.exists(TARGET_FOLDER):
     os.makedirs(TARGET_FOLDER)
 
 
-AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
+#AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
 
 # Configuration de la page Streamlit
 st.set_page_config(layout="wide", page_title="AIMA - Gestion de Devis")
@@ -409,3 +418,4 @@ if items_to_pdf:
         increment_counter(doc_type)
         st.success(f"✅ Sauvegardé : {full_path}")
         st.download_button(f"💾 Télécharger {doc_type}", open(full_path, "rb"), f"{doc_type}_{d_num}.pdf")
+
