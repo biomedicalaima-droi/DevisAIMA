@@ -17,6 +17,7 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
 AIMA_LOGO_PATH = resource_path("aima_logo.png")
 #AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
 
@@ -277,7 +278,29 @@ montant_remise_globale = st.sidebar.number_input("Montant Remise (EUR)", value=0
 
 st.markdown(f'<h1 style="color: #2c3e50;">AIMA - Générateur de {doc_type.capitalize()}</h1>', unsafe_allow_html=True)
 
+# --- ZONE DE SÉLECTION & AJOUT ---
 selected_catalog = st.multiselect("📦 Sélectionner les dispositifs :", options=sorted(list(data_prices.keys())), key="catalog_selector")
+
+# AJOUT D'ARTICLE PERSONNALISÉ (STYLE COMME SUR L'IMAGE)
+st.markdown("### ➕ Article personnalisé")
+cm1, cm2, cm3 = st.columns([3, 1, 0.5])
+with cm1:
+    custom_name = st.text_input("Désignation", placeholder="Nom de l'article...", label_visibility="visible")
+with cm2:
+    custom_price = st.number_input("Prix P.U.", min_value=0.0, format="%.2f")
+with cm3:
+    st.write(" ") # Pour aligner verticalement le bouton
+    if st.button("✅ Ajouter", use_container_width=True):
+        if custom_name:
+            new_item = {"id": f"custom_{time.time()}", "nom": custom_name, "prix": custom_price}
+            st.session_state.manual_items_dict.append(new_item)
+            st.rerun()
+        else:
+            st.error("Nom requis")
+
+st.divider()
+
+# --- GESTION DE LA LISTE FINALE ---
 items_to_pdf = []
 total_global_items = 0.0
 
@@ -286,10 +309,12 @@ for item in selected_catalog:
     if item not in [x['name'] for x in st.session_state.active_catalog]:
         st.session_state.active_catalog.append({'name': item, 'price': data_prices.get(item, 0.0)})
 
+# Affichage des articles du catalogue
 for i, item_data in enumerate(st.session_state.active_catalog):
     res, price = render_item_row(item_data['name'], item_data['price'], f"cat_{i}", mode=doc_type)
     items_to_pdf.append(res); total_global_items += price
 
+# Affichage des articles manuels
 for i, m in enumerate(st.session_state.manual_items_dict):
     res, price = render_item_row(m['nom'], m['prix'], f"man_{m['id']}", is_manual=True, index=i, mode=doc_type)
     items_to_pdf.append(res); total_global_items += price
@@ -361,7 +386,6 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
                         if os.path.exists(tmp_path): os.remove(tmp_path)
             pdf.cell(cols_w[6], h_row, str(row['Lieu']).encode('latin-1', 'replace').decode('latin-1'), 1, 1, 'C')
         else:
-            # Facture : Colonne Total est la dernière
             pdf.cell(cols_w[4], h_row, f"{row['Total']:,.2f}", 1, 1, 'C')
 
     # --- BLOC FINAL ---
@@ -369,12 +393,9 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
     if pdf.get_y() > 210: pdf.add_page()
     y_final_start = pdf.get_y()
     
-    # POSITIONNEMENT INVERSÉ DES BOITES
     if doc_type == "FACTURE":
-        # FACTURE : Boite financière à DROITE pour alignement avec colonne Total
         summary_x = 110
     else:
-        # DEVIS : Boite financière à GAUCHE
         summary_x = 10
 
     w_label = 65
@@ -383,8 +404,8 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
     
     summary_data = [
         (f"Cout adhesion annuelle {d_date.year}", f"1.00 EUR" if include_adh else "0.00 EUR"),
-        ("Livraison au pied de l'immeuble", f"{liv_total:,.2f} EUR"),
-        ("Remise / Remboursement", f"- {montant_remise_globale:,.2f} EUR" if montant_remise_globale > 0 else "0.00 EUR")
+        ("Livraison par nos soins au pied de l'immeuble", f"{liv_total:,.2f} EUR"),
+        ("Remise", f"- {montant_remise_globale:,.2f} EUR" if montant_remise_globale > 0 else "0.00 EUR")
     ]
     
     for label, val in summary_data:
@@ -397,7 +418,6 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
     pdf.cell(w_label, 10, "TOTAL NET", 1, 0, 'C', True)
     pdf.set_text_color(0, 0, 0); pdf.cell(w_value, 10, f"{grand_total:,.2f} EUR", 1, 1, 'C', False)
 
-    # Signature pour DEVIS à DROITE
     if doc_type == "DEVIS":
         pdf.set_xy(120, y_final_start)
         pdf.set_font("Arial", 'B', 9); pdf.cell(80, 8, "Signature et cachet :", 1, 1, 'L')
