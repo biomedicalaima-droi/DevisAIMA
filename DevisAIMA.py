@@ -389,7 +389,7 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
             pdf.cell(cols_w[4], h_row, f"{row['Total']:,.2f}", 1, 1, 'C')
 
     # --- BLOC FINAL ---
-    pdf.ln(10)
+    pdf.ln(3)
     if pdf.get_y() > 210: pdf.add_page()
     y_final_start = pdf.get_y()
     
@@ -400,7 +400,7 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
 
     w_label = 65
     w_value = 25
-    pdf.set_font("Arial", '', 9)
+    pdf.set_font("Arial", '', 8.5)
     
     summary_data = [
         (f"Cout adhesion annuelle {d_date.year}", f"1.00 EUR" if include_adh else "0.00 EUR"),
@@ -410,8 +410,8 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
     
     for label, val in summary_data:
         pdf.set_xy(summary_x, pdf.get_y())
-        pdf.cell(w_label, 8, label.encode('latin-1','replace').decode('latin-1'), 1, 0, 'L')
-        pdf.cell(w_value, 8, val, 1, 1, 'C')
+        pdf.cell(w_label, 6, label.encode('latin-1','replace').decode('latin-1'), 1, 0, 'L')
+        pdf.cell(w_value, 6, val, 1, 1, 'C')
 
     pdf.set_xy(summary_x, pdf.get_y())
     pdf.set_fill_color(51, 139, 140); pdf.set_text_color(255, 255, 255); pdf.set_font("Arial", 'B', 10)
@@ -420,8 +420,8 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
 
     if doc_type == "DEVIS":
         pdf.set_xy(120, y_final_start)
-        pdf.set_font("Arial", 'B', 9); pdf.cell(80, 8, "Signature et cachet :", 1, 1, 'L')
-        pdf.set_x(120); pdf.cell(80, 26, "", 1, 1)
+        pdf.set_font("Arial", 'B', 9); pdf.cell(80, 8, "Signature :", 1, 1, 'L')
+        pdf.set_x(120); pdf.cell(80, 20, "", 1, 1)
 
     pdf_data = pdf.output(dest='S')
     st.download_button(f"💾 Télécharger {doc_type}", pdf_data.encode('latin-1') if isinstance(pdf_data, str) else pdf_data, f"{d_num}.pdf", "application/pdf")
