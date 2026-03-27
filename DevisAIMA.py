@@ -331,7 +331,7 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
     
     if doc_type == "DEVIS":
         cols_w = [45, 17, 10, 15, 20, 60, 23] 
-        headers = ["Designation", "P.U.", "Qte", "Rem.", "Total", "Photos", "Lieu"]
+        headers = ["Designation", "P.U.", "Qte", "Remise", "Total", "Photos", "Lieu"]
     else:
         cols_w = [115, 17, 10, 18, 30] 
         headers = ["Designation", "P.U.", "Qte", "Remise", "Total"]
