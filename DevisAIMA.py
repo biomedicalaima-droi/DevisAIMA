@@ -8,7 +8,7 @@ import time
 import io
 import sys
 from PIL import Image
-import pdfplumber
+#import pdfplumber
 
 # --- CONFIGURATION INITIALE ---
 def resource_path(relative_path):
@@ -345,10 +345,10 @@ if items_to_pdf and st.button(f"📄 GÉNÉRER {doc_type} PDF"):
     for row in items_to_pdf:
         nom_p = row['Désignation'].encode('latin-1', 'replace').decode('latin-1')
         nb_lines = len(pdf.multi_cell(cols_w[0]-2, 4, nom_p, split_only=True))
-        min_h = 32 if (doc_type == "DEVIS" and row['Images']) else 10
-        h_row = max(nb_lines * 4 + 4, min_h)
+        min_h = 32 if (doc_type == "DEVIS" and row['Images']) else 6
+        h_row = max(nb_lines * 4 + 2, min_h)
         
-        if pdf.get_y() + h_row > 240: 
+        if pdf.get_y() + h_row > 210: 
             pdf.add_page()
             pdf.set_y(55)
             pdf.set_font('Arial', 'B', 8); pdf.set_fill_color(220, 220, 220)
