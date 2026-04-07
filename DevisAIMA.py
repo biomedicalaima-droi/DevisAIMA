@@ -8,7 +8,7 @@ import time
 import io
 import sys
 from PIL import Image
-#import pdfplumber
+import pdfplumber
 
 # --- CONFIGURATION INITIALE ---
 def resource_path(relative_path):
