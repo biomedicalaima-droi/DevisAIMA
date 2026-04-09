@@ -16,13 +16,18 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-# Logic to handle logo path for both local and cloud
-if os.path.exists("aima_logo.png"):
-    AIMA_LOGO_PATH = "aima_logo.png"
-else:
-    AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png" 
+AIMA_LOGO_PATH = resource_path("aima_logo.png")
+#AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
 
-st.set_page_config(layout="wide", page_title="AIMA - Gestion Médicale")
+st.set_page_config(layout="wide", page_title="AIMA - Gestion de Devis")
+
+if 'manual_items_dict' not in st.session_state:
+    st.session_state.manual_items_dict = []
+if 'active_catalog' not in st.session_state:
+    st.session_state.active_catalog = []
+if 'catalog_selector' not in st.session_state:
+    st.session_state.catalog_selector = []
+
 
 # --- TRANSLATION DICTIONARY ---
 LANG = {
