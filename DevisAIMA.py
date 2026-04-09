@@ -5,10 +5,8 @@ from datetime import date
 import os
 import tempfile
 import time
-import io
 import sys
 from PIL import Image
-import pdfplumber
 
 # --- CONFIGURATION INITIALE ---
 def resource_path(relative_path):
@@ -18,31 +16,79 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-AIMA_LOGO_PATH = resource_path("aima_logo.png")
-#AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png"
+# Logic to handle logo path for both local and cloud
+if os.path.exists("aima_logo.png"):
+    AIMA_LOGO_PATH = "aima_logo.png"
+else:
+    AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png" 
 
-st.set_page_config(layout="wide", page_title="AIMA - Gestion de Devis")
+st.set_page_config(layout="wide", page_title="AIMA - Gestion Médicale")
 
+# --- TRANSLATION DICTIONARY ---
+LANG = {
+    "FR": {
+        "title": "AIMA - Gestion de Devis & Factures Médicales",
+        "settings": "📝 Paramètres",
+        "type": "Type",
+        "date": "Date du document",
+        "by": "Réalisé par",
+        "loc": "Lieu d'expédition",
+        "client": "Client",
+        "address": "Adresse",
+        "doc_num": "N° Document",
+        "ref": "Référence",
+        "select_items": "📦 Sélectionner dispositifs :",
+        "add_custom": "➕ Ajouter un article personnalisé",
+        "designation": "Désignation",
+        "price": "Prix (EUR)",
+        "pu": "P.U. (EUR)",
+        "qty": "Qté",
+        "total": "Total",
+        "total_net": "TOTAL NET",
+        "generate": "📄 GÉNÉRER",
+        "download": "💾 Télécharger",
+        "photos": "Photos",
+        "import_title": "📥 Importer et Modifier un PDF existant",
+        "import_help": "Glissez un ancien PDF AIMA ici",
+        "footer_tva": "TVA non applicable, Art. 261-7b du code général des impôts",
+        "dest": "DESTINATAIRE"
+    },
+    "EN": {
+        "title": "AIMA - Medical Quote & Invoice Management",
+        "settings": "📝 Settings",
+        "type": "Type",
+        "date": "Document Date",
+        "by": "Prepared by",
+        "loc": "Shipping Location",
+        "client": "Client",
+        "address": "Address",
+        "doc_num": "Document No.",
+        "ref": "Reference",
+        "select_items": "📦 Select equipment:",
+        "add_custom": "➕ Add custom item",
+        "designation": "Description",
+        "price": "Price (EUR)",
+        "pu": "U.P. (EUR)",
+        "qty": "Qty",
+        "total": "Total",
+        "total_net": "TOTAL NET",
+        "generate": "📄 GENERATE",
+        "download": "💾 Download",
+        "photos": "Photos",
+        "import_title": "📥 Import and Edit existing PDF",
+        "import_help": "Drop an old AIMA PDF here",
+        "footer_tva": "VAT not applicable, Art. 261-7b of the General Tax Code",
+        "dest": "BILL TO"
+    }
+}
+
+# --- INITIALISATION SESSION STATE ---
 if 'manual_items_dict' not in st.session_state:
     st.session_state.manual_items_dict = []
 if 'active_catalog' not in st.session_state:
     st.session_state.active_catalog = []
 if 'catalog_selector' not in st.session_state:
     st.session_state.catalog_selector = []
-
-# --- CALLBACKS ---
-def delete_catalog_item(item_name):
-    if item_name in st.session_state.catalog_selector:
-        st.session_state.catalog_selector.remove(item_name)
-    st.session_state.active_catalog = [x for x in st.session_state.active_catalog if x['name'] != item_name]
-
-def delete_manual_item(index):
-    st.session_state.manual_items_dict.pop(index)
-
-# --- LOGO SIDEBAR ---
-if os.path.exists(AIMA_LOGO_PATH):
-    st.sidebar.image(AIMA_LOGO_PATH, use_container_width=True)
-    st.sidebar.divider()
 
 # --- DONNÉES MÉDICALES ---
 data_prices = {
