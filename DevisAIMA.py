@@ -210,7 +210,7 @@ doc_status = st.sidebar.selectbox(T['status'], status_options)
 
 realized_by = st.sidebar.text_input(T['by'], value="Equipe AIMA")
 
-payment_options = ["Virement Bancaire", "Espèces", "Chèque", "PayPal"] if lang_choice == "FR" else ["Bank Transfer", "Cash", "Check", "PayPal"]
+payment_options = ["Virement Bancaire", "Espèces", "Chèque"] if lang_choice == "FR" else ["Bank Transfer", "Cash", "Check", ]
 payment_method = st.sidebar.selectbox(T['payment'], payment_options)
 
 if st.sidebar.button(f"🔄 {T['reset']}", use_container_width=True):
