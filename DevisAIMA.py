@@ -77,24 +77,13 @@ def delete_catalog_item(item_name):
 
 def delete_manual_item(index):
     st.session_state.manual_items_dict.pop(index)
-    
-    
-    # --- LOGO SIDEBAR ---
+
+# --- LOGO SIDEBAR ---
 if os.path.exists(AIMA_LOGO_PATH):
     st.sidebar.image(AIMA_LOGO_PATH, use_container_width=True)
     st.sidebar.divider()
 
-
-
-# Chemin du logo (à adapter selon votre PC)
-if os.path.exists("aima_logo.png"):
-    AIMA_LOGO_PATH = "aima_logo.png"
-else:
-    AIMA_LOGO_PATH = "C:/Users/perso/Desktop/aima_logo.png" 
-
-st.set_page_config(layout="wide", page_title="AIMA - Gestion Médicale")
-
-# --- DATA (Apostrophes Fixed) ---
+# --- DATA ---
 data_prices = {
     "Abaisse-langue": [0, 1.5], "Anuscope": [0, 5], "Appareil de photothérapie": [45, 400],
     "Aspirateur à mucosités": [30, 150], "Aspirateur chirurgical": [30, 200], "Bain thermostaté": [30, 50],
@@ -103,7 +92,7 @@ data_prices = {
     "Brancard simple": [0, 25], "Brancard sur chariot roulant": [0, 150], "Centrifugeuse": [60, 300],
     "Capnographe": [45, 80], "Cardiotocographe": [45, 400], "Chaise percée - Chaise pot": [0, 10],
     "Chambre d'inhalation": [0, 7.5], "Chariot médical": [0, 25], "Colposcope": [15, 500],
-    "Concentrateur d’oxygène": [30, 250], "Consommable à usage unique": [0, 0.5],
+    "Concentrateur d'oxygène": [30, 250], "Consommable à usage unique": [0, 0.5],
     "Conteneur - Tambour de stérilisation": [0, 12.5], "Cupule": [0, 1.5],
     "Cuve-Bac à ultrasons pour nettoyage d'instruments": [15, 150], "Déambulateur": [0, 5],
     "Défibrillateur manuel": [60, 350], "Défibrillateur semi-automatique": [30, 250],
@@ -125,7 +114,7 @@ data_prices = {
     "Oxymètre de pouls - Saturo-mètre": [30, 80], "Panier à instruments / stérilisation": [0, 5],
     "Paravent": [0, 20], "Pèse-bébé (manuel ou électronique)": [15, 20], "Pèse-personne": [0, 10],
     "Pied à sérum - Potence": [0, 12.5], "Pissette": [0, 2.5], "Plateau à instruments": [0, 2.5],
-    "Poire à lavement": [0, 2.5], "Pompe d’auto-analgésie": [45, 100], "Pompe à nutrition entérale": [45, 75],
+    "Poire à lavement": [0, 2.5], "Pompe d'auto-analgésie": [45, 100], "Pompe à nutrition entérale": [45, 75],
     "Pompe à perfusion": [45, 120], "Pompe à pousse-seringue": [45, 100], "Rampe chauffante": [30, 120],
     "Rampe de photothérapie": [30, 200], "Rehausseur WC / Siège de bain": [0, 5],
     "Spéculum gynécologique": [0, 4], "Spiromètre": [0, 10], "Stérilisateur à chaleur humide - Autoclave": [90, 600],
@@ -135,11 +124,10 @@ data_prices = {
     "Tensiomètre automatique - Moniteur PNI": [30, 200], "Tensiomètre manuel - Sphygmomanomètre": [0, 5],
     "Tenues de soins et de bloc opératoire": [0, 5], "Thermo-soudeuse": [30, 50],
     "Tire-lait électrique": [15, 5], "Urinal - Bassin de lit": [0, 1.5],
-    "Ventilateur d’anesthésie (sans halogénés)": [120, 1500], "Ventilateur d’anesthésie (avec cuve halogénés)": [120, 2000],
+    "Ventilateur d'anesthésie (sans halogénés)": [120, 1500], "Ventilateur d'anesthésie (avec cuve halogénés)": [120, 2000],
     "Ventilateur de réanimation / Artificielle": [120, 1200], "Ventilateur de soins intensifs": [120, 1200],
-    "Ventilateur d’urgence": [60, 750], "Verticalisateur": [15, 175]
+    "Ventilateur d'urgence": [60, 750], "Verticalisateur": [15, 175]
 }
-
 
 LOCATIONS = {
     "SALIES-DE-BÉARN": {
@@ -157,7 +145,7 @@ LANG = {
         "reset": "Réinitialiser tout", "date": "Date du document", "by": "Réalisé par", "loc": "Lieu d'expédition",
         "client": "Client", "address": "Adresse", "doc_num": "N° Document", "ref": "Référence",
         "select_items": "📦 Sélectionner dispositifs :", "add_custom": "➕ Ajouter un article personnalisé",
-        "designation": "Désignation", "price": "Prix (EUR)", "pu": "P.U. (EUR)", "qty": "Qté", "total": "Total",
+        "designation": "Désignation", "price": "Participation (EUR)", "pu": "Participation Financière", "qty": "Qté", "total": "Total",
         "total_net": "TOTAL NET", "generate": "📄 GÉNÉRER", "download": "💾 Télécharger", "photos": "Photos",
         "import_title": "📥 Importer un PDF existant", "import_help": "Glissez un ancien PDF AIMA ici",
         "footer_tva": "TVA non applicable, Art. 261-7b du code général des impôts", "dest": "DESTINATAIRE"
@@ -167,7 +155,7 @@ LANG = {
         "reset": "Reset All", "date": "Document Date", "by": "Prepared by", "loc": "Shipping Location",
         "client": "Client", "address": "Address", "doc_num": "Document No.", "ref": "Reference",
         "select_items": "📦 Select equipment:", "add_custom": "➕ Add custom item",
-        "designation": "Description", "price": "Price (EUR)", "pu": "U.P. (EUR)", "qty": "Qty", "total": "Total",
+        "designation": "Description", "price": "Contribution (EUR)", "pu": "Financial Participation", "qty": "Qty", "total": "Total",
         "total_net": "TOTAL NET", "generate": "GENERATE", "download": "💾 Download", "photos": "Photos",
         "import_title": "📥 Import existing PDF", "import_help": "Drop an old AIMA PDF here",
         "footer_tva": "VAT not applicable, Art. 261-7b of the General Tax Code", "dest": "BILL TO"
@@ -201,9 +189,7 @@ class AIMA_PDF(FPDF):
         self.T = lang_dict
 
     def clean_text(self, text):
-        """Converts UTF-8 text to Latin-1 safely for FPDF"""
         if not text: return ""
-        # Fix curly apostrophes and quotes
         text = text.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
         return text.encode('latin-1', 'replace').decode('latin-1')
 
@@ -317,35 +303,60 @@ if items_to_pdf and st.button(f"{T['generate']} {doc_type} PDF"):
     pdf.add_page()
     aima_info = f"{loc_data['sub_name']}\n{loc_data['address']}\nTel: {loc_data['phone']}\nMail: {loc_data['email']}\nSIRET: {loc_data['SIRET']}"
     y_pos = pdf.draw_info_blocks(d_num, d_ref, doc_date, c_name, c_addr, aima_info, realized_by)
-    cols_w = [115, 30, 15, 30] if doc_type == "FACTURE" else [65, 20, 10, 23, 72]
-    headers = [T['designation'], T['pu'], T['qty'], T['total'] + " EUR"]
-    if doc_type == "DEVIS": headers.append(T['photos'])
-    pdf.set_font('Arial', 'B', 9); pdf.set_fill_color(220, 220, 220); pdf.set_xy(10, y_pos)
-    for i, h in enumerate(headers): pdf.cell(cols_w[i], 8, pdf.clean_text(h), 1, 0, 'C', True)
+    
+    # NEW ADJUSTED COLUMN WIDTHS 
+    # Designation (60), Participation (40), Qty (10), Total (25), Photos (55)
+    if doc_type == "DEVIS":
+        cols_w = [60, 40, 10, 25, 55] 
+        headers = [T['designation'], "Part. Financière (EUR)", T['qty'], T['total'] + " EUR", T['photos']]
+    else:
+        cols_w = [110, 45, 10, 25]
+        headers = [T['designation'], "Part. Financière (EUR)", T['qty'], T['total'] + " EUR"]
+    
+    pdf.set_font('Arial', 'B', 8); pdf.set_fill_color(220, 220, 220); pdf.set_xy(10, y_pos)
+    for i, h in enumerate(headers): 
+        pdf.cell(cols_w[i], 8, pdf.clean_text(h), 1, 0, 'C', True)
     pdf.ln()
 
     pdf.set_font("Arial", '', 9)
     for row in items_to_pdf:
-        h_row = 8 if doc_type == "FACTURE" else (32 if row['Images'] else 12)
+        # Increase row height for better photo display in DEVIS 
+        h_row = 8 if doc_type == "FACTURE" else (35 if row['Images'] else 12)
         if pdf.get_y() + h_row > 260: pdf.add_page()
+        
         y_start = pdf.get_y()
+        
+        # 1. Désignation
         pdf.set_xy(10, y_start + 2)
         pdf.multi_cell(cols_w[0], 4, pdf.clean_text(row['Désignation']), 0, 'L')
+        
+        # 2. Participation Financière (P.U.)
         pdf.set_xy(10 + cols_w[0], y_start)
-        pdf.cell(cols_w[1], 8, f"{row['P.U.']:,.2f}", 0, 0, 'C')
-        pdf.cell(cols_w[2], 8, str(row['Qté']), 0, 0, 'C')
-        pdf.cell(cols_w[3], 8, f"{row['Total']:,.2f}", 0, 0, 'C')
+        pdf.cell(cols_w[1], h_row, f"{row['P.U.']:,.2f}", 0, 0, 'C')
+        
+        # 3. Qté
+        pdf.cell(cols_w[2], h_row, str(row['Qté']), 0, 0, 'C')
+        
+        # 4. Total
+        pdf.cell(cols_w[3], h_row, f"{row['Total']:,.2f}", 0, 0, 'C')
+        
+        # 5. Photos (More space allocated here) 
         if doc_type == "DEVIS" and row['Images']:
-            img_x = 10 + sum(cols_w[:4])
+            img_x_start = 10 + sum(cols_w[:4])
             for idx, img_f in enumerate(row['Images']):
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
                     with Image.open(img_f) as pimg:
                         if pimg.mode != "RGB": pimg = pimg.convert("RGB")
                         pimg.save(tmp.name, "JPEG")
-                    pdf.image(tmp.name, img_x + 2 + (idx*22), y_start + 2, h=h_row-4)
+                    # Adjusted image size to fit the new larger column
+                    pdf.image(tmp.name, img_x_start + 2 + (idx * 18), y_start + 2, h=h_row - 4)
                 os.remove(tmp.name)
+        
+        # Draw the borders for the row
         cx = 10
-        for w in cols_w: pdf.rect(cx, y_start, w, h_row); cx += w
+        for w in cols_w: 
+            pdf.rect(cx, y_start, w, h_row)
+            cx += w
         pdf.set_y(y_start + h_row)
 
     pdf.ln(5); summary_x = 10 + sum(cols_w) - 85; pdf.set_xy(summary_x, pdf.get_y())
