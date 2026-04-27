@@ -115,7 +115,7 @@ data_prices = {
     "Glucomètre": [0, 2.5], "Haricot": [0, 5], "Incubateur de néonatalogie fermé - Couveuse": [120, 400],
     "Incubateur de néonatalogie ouvert - Table de réanimation": [120, 400],
     "Instrumentation (Chirurgie/Gynéco/ORL/Ortho/etc.)": [0, 4], "Insufflateur manuel": [0, 25],
-    "Lampe d’examen": [15, 50], "Laryngoscope": [15, 37.5], "Littérature médicale": [0, 0],
+    "Lampe d'examen": [15, 50], "Laryngoscope": [15, 37.5], "Littérature médicale": [0, 0],
     "Lève-malade - Sangle lève-personne": [15, 17.5], "Lunettes - Montures": [0, 2.5],
     "Marteau à réflexes": [0, 5], "Masque facial pour ventilation-insufflation": [0, 5],
     "Microscope de paillasse": [30, 150], "Microscope opératoire": [60, 1100],
